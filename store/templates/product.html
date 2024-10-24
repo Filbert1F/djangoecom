@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container py-4 pb-2">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'home' %}?category_name={{ product.category.name }}" class="text-decoration-none">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+        </ol>
+    </nav>
+</div>
+
+
+<div class="container mb-5">
+    <div class="row">
+        
+        <div class="col-md-6 mb-4">
+            <div class="position-relative">
+                <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h1 class="mb-3">{{ product.name }}</h1>
+            
+            <div class="mb-4">
+                {% if product.is_sale %}
+                <span class="h2 text-danger me-2">${{ product.sale_price }}</span>
+                <s class="text-muted h5">${{ product.price }}</s>
+                <span class="badge bg-danger ms-2">Sale</span>
+                {% else %}
+                <span class="h2">${{ product.price }}</span>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <h5>Description</h5>
+                <p class="text-muted" style="white-space: pre-line; margin-top: -3em;" >
+                    {% if product.description %}
+                    {{ product.description }}
+                    {% else %}
+                    No description
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="mb-4">
+                <div class="mb-4">
+                    <label class="form-label">Quantity</label>
+                    <div class="input-group" style="width: 130px;">
+                        <button class="btn btn-outline-secondary" type="button" id="decreaseBtn">-</button>
+                        <input type="text" class="form-control text-center" value="1" id="qty">
+                        <button class="btn btn-outline-secondary" type="button" id="increaseBtn">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary btn-lg" id="add-to-cart" value="{{ product.uuid }}">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).on('click', '#add-to-cart', function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: "POST",
+            url: "{% url 'cart:add' %}",
+            data: {
+                product_uuid: $('#add-to-cart').val(),
+                qty: $('#qty').val(),
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function(json) {
+                // console.log(json)
+                // document.getElementById('cart_qty').textContent = json.cart_qty;
+                location.reload();
+            },
+            error: function(xhr, err_message, err) {
+                location.reload()
+            }
+        });
+    });
+
+    $(document).ready(function() {
+        $('#increaseBtn').click(function() {
+            var $input = $('#qty');
+            var currentValue = parseInt($input.val());
+            if (!isNaN(currentValue)) {
+                $input.val(currentValue + 1);
+            }
+        });
+
+        $('#decreaseBtn').click(function() {
+            var $input = $('#qty');
+            var currentValue = parseInt($input.val());
+            if (!isNaN(currentValue) && currentValue > 1) {
+                $input.val(currentValue - 1);
+            }
+        });
+
+        $('#qty').on('input', function() {
+            var value = $(this).val();
+            if (isNaN(value) || value < 1) {
+                $(this).val(1);
+            }
+        });
+    });
+</script>
+{% endblock %}

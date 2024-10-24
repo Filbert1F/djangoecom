@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="bg-primary text-white py-5 mb-4">
+	<div class="container text-center">
+		<h1 class="display-5 fw-bold">Summer Collection 2024</h1>
+		<p class="lead">Up to 50% off on selected items</p>
+		<a href="{% url 'home' %}?is_sale=1" class="btn btn-light btn-lg">Shop Now</a>
+	</div>
+</div>
+
+<div class="container">
+	<div class="row mb-4">
+		<div class="col-md-8">
+			<div class="btn-group">
+				<form method="GET">
+					{% for key, value in request.GET.items %}
+						{% if key != 'category_name' %}
+							<input type="hidden" name="{{ key }}" value="{{ value }}">
+						{% endif %}
+					{% endfor %}
+					<select name="category_name" class="form-select me-2" style="width: auto;" onchange="this.form.submit()">
+						<option value="" >All Categories</option>
+						{% for category in categories %}
+						<option 
+							value="{{ category.name }}"
+							{% if request.GET.category_name == category.name %}selected{% endif %}
+						>
+							{{ category.name }}
+						</option>
+						{% endfor %}
+					</select>
+				</form>
+				<form method="GET">
+					{% for key, value in request.GET.items %}
+						{% if key != 'sort_by' %}
+							<input type="hidden" name="{{ key }}" value="{{ value }}">
+						{% endif %}
+					{% endfor %}
+					<select name="sort_by" class="form-select" style="width: auto;" onchange="this.form.submit()">
+						<option value="" >Sort By</option>
+						<option value="low-to-high" {% if request.GET.sort_by == 'low-to-high' %}selected{% endif %}>Price: Low to High</option>
+						<option value="high-to-low" {% if request.GET.sort_by == 'high-to-low' %}selected{% endif %}>Price: High to Low</option>
+						<option value="newest" {% if request.GET.sort_by == 'newest' %}selected{% endif %}>Newest First</option>
+					</select>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mb-4">
+		
+		{% for product in products %}
+		<div class="col">
+			<div class="card h-100">
+				{% if product.is_sale %}
+				<div class="badge bg-danger position-absolute top-0 end-0 m-2">Sale</div>
+				{% endif %}
+				<img src={{ product.image.url }} class="card-img-top" alt="Product Image">
+				<div class="card-body">
+					<h5 class="card-title">{{ product.name }}</h5>
+					<p class="card-text text-muted text-truncate">
+						{% if product.description %}
+						{{ product.description }}
+						{% else %}
+						No description
+						{% endif %}
+					</p>
+					<div class="d-flex align-items-center">
+						{% if product.is_sale %}
+						<span class="h5 mb-0">${{ product.sale_price }}</span>
+						&nbsp;
+						<s class="small">${{ product.price }}</s>
+						{% else %}
+						<span class="h5 mb-0">${{ product.price }}</span>
+						{% endif %}
+					</div>
+				</div>
+				<div class="card-footer bg-transparent border-top-0">
+					<div class="d-grid">
+						<a href="{% url 'product' product.uuid %}" class="btn btn-outline-primary">View</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+
+<script type="text/javascript">
+	function handleSelect(elm)
+	{
+	   window.location = elm.value;
+	}
+</script>
+
+{% endblock %}

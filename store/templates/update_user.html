@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<form method="POST" action="{% url 'update_user' %}" class="container mt-3 mb-5">
+	{% csrf_token %}
+
+	<div class="row gy-2 mb-4">
+		<div class="form-group">
+			{{ user_form.username }}
+			{% if user_form.username.errors %}
+				{% for error in user_form.username.errors %}
+					<div class="invalid-feedback d-block">
+						{{ error }}
+					</div>
+				{% endfor %}
+			{% endif %}
+		</div>
+
+		<div class="form-group">
+			{{ user_form.first_name }}
+			{% if user_form.first_name.errors %}
+				{% for error in user_form.first_name.errors %}
+					<div class="invalid-feedback d-block">
+						{{ error }}
+					</div>
+				{% endfor %}
+			{% endif %}
+		</div>
+
+		<div class="form-group">
+			{{ user_form.last_name }}
+			{% if user_form.last_name.errors %}
+				{% for error in user_form.last_name.errors %}
+					<div class="invalid-feedback d-block">
+						{{ error }}
+					</div>
+				{% endfor %}
+			{% endif %}
+		</div>
+
+		<div class="form-group">
+			{{ user_form.email }}
+			{% if user_form.email.errors %}
+				{% for error in user_form.email.errors %}
+					<div class="invalid-feedback d-block">
+						{{ error }}
+					</div>
+				{% endfor %}
+			{% endif %}
+		</div>
+
+		<div class="form-group">
+			{{ profile_form.phone }}
+			{% if profile_form.phone.errors %}
+				{% for error in profile_form.phone.errors %}
+					<div class="invalid-feedback d-block">
+						{{ error }}
+					</div>
+				{% endfor %}
+			{% endif %}
+		</div>
+	</div>
+	<button type="submit" class="btn btn-primary">Update Profile</button>
+	<br>
+	<a class="btn btn-outline-primary mt-3" href="{% url 'update_password' %}">Update Password</a>
+</form>
+
+{% endblock %}
