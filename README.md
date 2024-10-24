@@ -24,5 +24,9 @@ python manage.py test
 Once the server is running, visit:
 - Home page: `http://localhost:8000`
 - Admin panel: `http://localhost:8000/admin`
+To create a superuser for admin:
+```bash
+python manage.py createsuperuser
+```
 
 
