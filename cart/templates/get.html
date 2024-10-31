@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container mb-5 mt-3">
+    {% if cart_items %}
+    <div class="row">
+        
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="row mb-4" id="{{ item.product.uuid }}">
+                        <div class="col-md-3">
+                            <img src="{{ item.product.image.url }}" class="img-fluid rounded" alt="Product Image">
+                        </div>
+                        <div class="col-md-3">
+                            <h5 class="card-title"><a href="{% url 'product' item.product.uuid %}">{{ item.product.name }}</a></h5>
+                            <p class="text-muted small mb-2">
+                                {% if item.product.description %}
+                                {{ item.product.description|truncatechars:100 }}
+                                {% endif %}
+                            </p>
+                            <button class="btn btn-link text-danger p-0 deleteitem" data-index="{{ item.product.uuid }}">
+                                <i class="bi bi-trash"></i> Remove
+                            </button>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="input-group input-group-sm">
+                                <div method="POST" class="d-flex">
+                                    <div class="input-group" style="width: 120px">
+                                        <button class="btn btn-outline-secondary decrease" type="button" data-index="{{ item.product.uuid }}">-</button>
+                                        <input type="number" class="form-control text-center px-0" value="{{ item.qty }}" 
+                                            min="1" max="99" readonly id="qty{{ item.product.uuid }}">
+                                        <button class="btn btn-outline-secondary increase" type="button" data-index="{{ item.product.uuid }}">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            {% if item.product.is_sale %}
+                            <span class="h6">${{ item.product.sale_price }}</span>
+                            <br>
+                            <s class="small text-muted">${{ item.product.price }}</s>
+                            {% else %}
+                            <span class="h6">${{ item.product.price }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <span class="h6">Total: ${{ item.total }}</span>
+                        </div>
+                    </div>
+                    {% if not forloop.last %}
+                    <hr class="my-4">
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Order Summary</h5>
+                    <div class="d-flex justify-content-between mb-4">
+                        <strong>Total</strong>
+                        <strong>${{ total|default:"0.00" }}</strong>
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="form-group mb-3">
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                {% for error in form.phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group mb-3">
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                {% for error in form.address.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ error }}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <form>
+                                <button class="btn btn-primary w-100">Proceed to Pay</button>
+                            </form>
+                            <a href="{% url 'home' %}" class="btn btn-outline-primary">Continue Shopping</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    
+    <div class="text-center py-5">
+        <i class="bi bi-cart3 display-1 text-muted mb-4"></i>
+        <h2>Your cart is empty</h2>
+        <p class="text-muted mb-4">Looks like you haven't added any items to your cart yet.</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Start Shopping</a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    $(document).on('click', '.increase', function(e) {
+        e.preventDefault();
+        let product_uuid = $(this).data('index');
+
+        $.ajax({
+            type: "POST",
+            url: "{% url 'cart:update' %}",
+            data: {
+                product_uuid: product_uuid,
+                qty: parseInt($('#qty' + product_uuid).val()) + 1,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function(json) {
+                location.reload()
+            },
+            error: function(xhr, err_message, err) {
+
+            }
+        });
+    });
+
+    $(document).on('click', '.decrease', function(e) {
+        e.preventDefault();
+        let product_uuid = $(this).data('index');
+        let currentQty = parseInt($('#qty' + product_uuid).val());
+        
+        if (currentQty > 1) {
+            $.ajax({
+                type: "POST",
+                url: "{% url 'cart:update' %}",
+                data: {
+                    product_uuid: product_uuid,
+                    qty: currentQty - 1,
+                    csrfmiddlewaretoken: '{{ csrf_token }}',
+                },
+                success: function(json) {
+                    location.reload()
+                },
+                error: function(xhr, err_message, err) {
+
+                }
+            });
+        }
+    });
+
+    $(document).on('click', '.deleteitem', function(e) {
+        e.preventDefault();
+        let product_uuid = $(this).data('index');
+        
+        $.ajax({
+            type: "POST",
+            url: "{% url 'cart:delete' %}",
+            data: {
+                product_uuid: product_uuid,
+                csrfmiddlewaretoken: '{{ csrf_token }}',
+            },
+            success: function(json) {
+                location.reload()
+            },
+            error: function(xhr, err_message, err) {
+
+            }
+        });
+    });
+</script>
+
+{% endblock %}

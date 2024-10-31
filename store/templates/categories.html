@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="bg-primary text-white py-5 mb-4">
+    <div class="container text-center">
+        <h1 class="display-5 fw-bold">Browse Categories</h1>
+        <p class="lead">Explore our wide range of collections</p>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="btn-group">
+                <form method="GET">
+                    {% for key, value in request.GET.items %}
+                        {% if key != 'sort_by' %}
+                            <input type="hidden" name="{{ key }}" value="{{ value }}">
+                        {% endif %}
+                    {% endfor %}
+                    <select name="sort_by" class="form-select" style="width: auto;" onchange="this.form.submit()">
+                        <option value="">Sort Categories</option>
+                        <option value="a-z" {% if request.GET.sort_by == 'a-z' %}selected{% endif %}>Name: A to Z</option>
+                        <option value="z-a" {% if request.GET.sort_by == 'z-a' %}selected{% endif %}>Name: Z to A</option>
+                        <option value="most-items" {% if request.GET.sort_by == 'most-items' %}selected{% endif %}>Most Items</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+        {% for category in categories %}
+        <div class="col">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <h4 class="card-title">{{ category.name }}</h4>
+                    <p class="card-text text-muted">
+                        Browse our {{ category.name }} collection
+                    </p>
+                    <p class="text-muted mb-3">
+                        <small>{{ category.product_count }} Products</small>
+                    </p>
+                    <div class="d-grid">
+                        <a href="{% url 'home' %}?category_name={{ category.name }}" 
+                           class="btn btn-outline-primary">
+                            View Collection
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
